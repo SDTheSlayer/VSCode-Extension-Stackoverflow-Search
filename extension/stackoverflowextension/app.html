@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Cat Coding</title>
+	</head>
+	<body>
+		<p id="title">Search Engine</p>
+	 <form> 
+            <input type="text" id="query">
+            <!-- <input type="text" id="text">  -->
+             <button onclick="moduleAdd()">Click me</button>        </form>
+    </body>
+    <script>
+        const vscode = acquireVsCodeApi();
+        function moduleAdd(){
+            var x = document.getElementById("query").value;
+            vscode.postMessage({command: "alert", text: x});
+        }        
+       </script>
+</html> 
