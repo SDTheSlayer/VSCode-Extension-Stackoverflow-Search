@@ -5,3 +5,4 @@ extension/stackoverflowextension/python_script/lib
 extension/stackoverflowextension/python_script/lib64
 extension/stackoverflowextension/python_script/share
 extension/stackoverflowextension/python_script/pyvenv.cfg
+models/*

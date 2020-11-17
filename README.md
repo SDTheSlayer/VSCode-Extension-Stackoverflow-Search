@@ -5,7 +5,15 @@ Notebooks:
 3) [Tag classifer](https://colab.research.google.com/drive/1-O_I5m2i__G00_p70Q0XMuFGyv135dFk?usp=sharing)
 4) [Search](https://drive.google.com/file/d/182V2dtAUlGq2V8ILmrYyMBkZ-0mYr4dD/view?usp=sharing)
 
+STEP1:
+
+Download Preprocessed_data.csv, Tag_predictor_weights.hs, tokenizer.pickel, SO_word2vec_embeddings.bin, title_embeddings.csv from "Stackoverflow_VS_extension" folder in google drive created while training or directly use this [link](https://drive.google.com/drive/folders/1d12VLLcy-Y1g_wWS0Zbtvb0SsUUQSb8J?usp=sharing). Save all these files to /models
+
+STEP2:
+
 TODO: npm installs and nodejs project setup
+
+STEP 3:
 
 Python script setup
 1) cd extension/stackoverflowextension/python_script/
