@@ -10,8 +10,18 @@ from keras.layers import Embedding, GRU, Dense
 from keras.preprocessing.sequence import pad_sequences
 import pickle
 import time
+# from util import data
+
+
+
+### To restore variables from util.py ###
 
 start_time = time.time()
+# with open(sys.argv[2] + '/python_script/objs.pkl', "rb") as f:
+#     data, w2v_model, tokenizer, tags_encoded, embedding_matrix, vocab_size = pickle.load(f)
+
+
+
 # Read pre-processed file
 data = pd.read_csv(sys.argv[2] + '/../../models/Preprocessed_data.csv')
 
@@ -24,6 +34,7 @@ all_title_embeddings = pd.read_csv(sys.argv[2] + '/../../models/title_embeddings
 # Load tokeniser
 with open(sys.argv[2] + '/../../models/tokenizer.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
+
 
 word_index = tokenizer.word_index
 vocab_size = len(word_index)
@@ -101,10 +112,11 @@ for tags in data.tags:
     final_tag_data.append(temp)
 tag_encoder = MultiLabelBinarizer()
 tags_encoded = tag_encoder.fit_transform(final_tag_data)
-print(time.time() - start_time)
 
 
 ################ Funciton calls ##############################
+
+# start_time = time.time()
 search_string = ' '.join(sys.argv[1].split(','))
 results_returned = 5
 search_vec = np.array([question_to_vec(search_string, w2v_model)])
@@ -117,8 +129,8 @@ cosine_similarities = cosine_similarities*(1 + 0.4*data.overall_scores )
 
 result = ""
 for i, j in cosine_similarities.nlargest(int(results_returned)).iteritems():
-    result += data.original_title[i] + '\n'
-    result += data.question_url[i] + '\n'
+    # result += data.original_title[i] + '\n'
+    result += data.question_url[i] + ','
     
 print(result)
-print("Total time taken to run query:" + str(time.time() - start_time))
+# print("Total time taken to run query:" + str(time.time() - start_time))
