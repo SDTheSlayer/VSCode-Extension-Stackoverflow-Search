@@ -15,7 +15,9 @@ TODO: npm installs and nodejs project setup
 
 STEP 3:
 
-Python script setup
+Server setup:
 1) cd extension/stackoverflowextension/python_script/
 2) python3 -m venv .
 3) pip3 install -r requirements.txt
+4) python3 server.py
+5) Open [link](127.0.0.1:5000/). This will setup the server, wait for 20-30 seconds for Data read to appear on webpage.

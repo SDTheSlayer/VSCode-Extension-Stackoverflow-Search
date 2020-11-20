@@ -5,9 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const natural = require('natural');
 const stopword = require('stopword');
-const cp = require('child_process');
 const request = require("request");
 const zlib = require('zlib');
+var showdown  = require('showdown');
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 
@@ -15,7 +15,7 @@ const zlib = require('zlib');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-
+	
 	vscode.commands.registerCommand('stackoverflowextension.start', function() {
 		const panel = vscode.window.createWebviewPanel('mainpage', 'Search Engine', vscode.ViewColumn.One, {enableScripts: true});
 		const pathhtml = vscode.Uri.file(path.join(context.extensionPath, 'app.html'));
@@ -27,8 +27,8 @@ function activate(context) {
 			switch(message.command)
 			{
 				case 'alert':
-					// MainFunction(message.text, currentPath);
-					TestServerFunction();
+					MainFunction(message.text, currentPath);
+					// TestServerFunction();
 					vscode.window.showErrorMessage(message.text);
 					return;
 				}
@@ -41,11 +41,11 @@ function activate(context) {
 
 
 function TestServerFunction() {
-	request("http://127.0.0.1:5000/", function(error, response, body) {
-		// console.error('error:', error); // Print the error if one occurred
-		// console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-		console.log('body:', body); // Print the HTML for the Google homepage.
-	});
+			// console.log("Body markdown:" + response.items[0].body_markdown)
+		var converter = new showdown.Converter();
+    	var html = converter.makeHtml("My problem is really weird. I have to sort an list like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E010&quot;, &quot;S02E013&quot;, &quot;S02E02&quot;, &quot;S02E03&quot;]\r\n\r\nand I want result like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E02&quot;, &quot;S02E03&quot;, &quot;S02E010&quot;, &quot;S02E013&quot;]\r\n\r\nI used `sort()`, `sorted()`, `map()` methods but these methods couldn&#39;t sort this list as it is already sorted. \r\nIf you type &quot;010&quot;&gt;&quot;02&quot; in python console it will return **false**.\r\n\r\n\r\n**_Please suggest me any way to debug this problem._**\r\n\r\n\r\n[See the console screenshots][2]\r\n\r\n\r\n  [1]: https://i.stack.imgur.com/oDERn.png\r\n  [2]: https://i.stack.imgur.com/Jb7BF.png\r\n");
+		console.log("HTML" + html);
+		
 }
 // Could not use spacy
 /**
@@ -66,39 +66,43 @@ function MainFunction(message, currentPath)
 
 	// To remove stopwords
 	const afterremovingstopwords = stopword.removeStopwords(tokens);
-	console.log(afterremovingstopwords);
+	// console.log(afterremovingstopwords);
 
 	var data;
-	// TODO: Add condition for python3 or python
-	// CMD: python_script/bin/python3 script.py afterremovingstopwords currentpath
-	cp.exec(currentPath + '/python_script/bin/python3 ' + currentPath + '/python_script/script.py ' + afterremovingstopwords + " " + currentPath, (err, stdout, _) => {
-
-		if (err) {
-			console.log('error: ' + err);
-		}
-		else
-		{
-			console.log('data:', stdout);
-			data = stdout.split(',');
-			ProcessData(data);
-		}
-
-	});
-
+	request("http://127.0.0.1:5000/search/" + afterremovingstopwords, function(error, response, body) {
+		// console.log(body);
+		data = body.split(',');
+		ProcessIds(data);
+	})
 }
 
 /**
  * @param {string[]} data
  */
-async function ProcessData(data) {
+async function ProcessIds(data) {
 	// console.log(data);
-	var url = data[0].split('/');
-	var id = url[url.length-1];
-	console.log(id);
+	var ids = [];
+	for(var i=0;i<data.length-1;i++)
+	{
+		let temp = data[i].split('/');
+		ids.push(temp[temp.length-1]);
+	}
+	
 
-	var url1 = "https://api.stackexchange.com/2.2/questions/45807357/answers?order=desc&sort=activity&site=stackoverflow"
+	var questions_url = "https://api.stackexchange.com/2.2/questions/";
+	var answers_url = "https://api.stackexchange.com/2.2/questions/";
+	for (var i=0;i<ids.length-1;i++)
+	{
+		questions_url += ids[i] + ';';
+		answers_url += ids[i] + ';';
+	}
+	questions_url += ids[ids.length - 1] + "?site=stackoverflow&filter=!9_bDDx5Ia";
+	answers_url += ids[ids.length - 1] + "/answers?site=stackoverflow&filter=!9_bDE(S2a";
+	// console.log(questions_url);
+	var JSONData = {}
+	// First get question data [title, body]
 	var reqData = {
-		url: url1,
+		url: questions_url,
 		method:"get",
 		headers: {'Accept-Encoding': 'gzip'}
 	}
@@ -109,15 +113,51 @@ async function ProcessData(data) {
 	});
 	gunzip.on('end', function(){
 		var response = (JSON.parse(json));
-		console.log(response);
-		console.log(response.items[0].answer_id);
+		var questions = response.items;
+		for (var i=0;i<questions.length;i++)
+		{
+			var question = {"title":questions[i].title,"body":questions[i].body}
+			JSONData[questions[i].question_id] = question;
+		}
+		// console.log(JSONData);
+		GetAnswers(answers_url, JSONData);
 	});
 	request(reqData)
 		.pipe(gunzip)
 
 }
 
-
+function GetAnswers(answers_url, JSONData) {
+	var reqData = {
+		url: answers_url,
+		method:"get",
+		headers: {'Accept-Encoding': 'gzip'}
+	}
+	var gunzip = zlib.createGunzip();
+	var json = "";
+	gunzip.on('data', function(data){
+		json += data.toString();
+	});
+	gunzip.on('end', function(){
+		var response = (JSON.parse(json));
+		var answers = response.items;
+		for (var i=0;i<answers.length;i++)
+		{
+			var answer = {"body":answers[i].body}
+			if ("answers" in JSONData[answers[i].question_id])
+			{
+				JSONData[answers[i].question_id]["answers"].push(answer);
+			}
+			else
+			{	
+				JSONData[answers[i].question_id]["answers"] = [answer];
+			}
+		}
+		console.log(JSONData);
+	});
+	request(reqData)
+		.pipe(gunzip)
+}
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
@@ -127,3 +167,35 @@ module.exports = {
 	activate,
 	deactivate
 }
+
+
+
+// TODO: Add condition for python3 or python
+// CMD: python_script/bin/python3 script.py afterremovingstopwords currentpath
+// cp.exec(currentPath + '/python_script/bin/python3 ' + currentPath + '/python_script/script.py ' + afterremovingstopwords + " " + currentPath, (err, stdout, _) => {
+
+// 	if (err) {
+// 		console.log('error: ' + err);
+// 	}
+// 	else
+// 	{
+// 		console.log('data:', stdout);
+// 		data = stdout.split(',');
+// 		ProcessIds(data);
+// 	}
+
+// });
+
+/*
+
+Question i -> title -> all answers
+
+JSONData[question_id] = {title:"title", "body": body, answers:[answer1_body, answer2_body]}
+
+*/
+
+// console.log("Body markdown:" + response.items[0].body_markdown)
+// var converter = new showdown.Converter();
+// var html = converter.makeHtml(response.items[0].body_markdown);
+// console.log("HTML" + html);
+// GetAnswers(response);
