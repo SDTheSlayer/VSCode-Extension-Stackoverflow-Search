@@ -3,8 +3,9 @@ import pandas as pd
 from pathlib import Path
 import gensim
 import pickle
-from keras.models import Sequential
-from keras.layers import Embedding, GRU, Dense
+import tensorflow
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, GRU, Dense, BatchNormalization
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -63,6 +64,9 @@ def home():
     Store.model = Sequential()
     Store.model.add(Embedding(vocab_size+1, W2V_SIZE, weights=[Store.embedding_matrix], input_length=Store.MAX_SEQUENCE_LENGTH, trainable=False))
     Store.model.add(GRU(500, activation='relu',kernel_initializer='he_normal'))
+    Store.model.add(BatchNormalization())
+    Store.model.add(Dense(150,activation='relu'))
+    Store.model.add(BatchNormalization())
     Store.model.add(Dense(500, activation='sigmoid'))
 
     Store.model.compile(loss="binary_crossentropy",
@@ -138,13 +142,13 @@ def predict_tags_get_one_hot_vector(text):
     x_test = pad_sequences(Store.tokenizer.texts_to_sequences([text]), maxlen=Store.MAX_SEQUENCE_LENGTH)
     # Predict
     prediction = Store.model.predict([x_test])[0]
-    temp_prediction = prediction
-    indices = temp_prediction.argsort()[-5:]
-    for i, value in enumerate(prediction):
-        if i in indices:
-            prediction[i]=1
-        else:
-            prediction[i]=0
+    # temp_prediction = prediction
+    # indices = temp_prediction.argsort()[-5:]
+    # for i, value in enumerate(prediction):
+    #     if i in indices:
+    #         prediction[i]=1
+    #     else:
+    #         prediction[i]=0
     return prediction
 
 

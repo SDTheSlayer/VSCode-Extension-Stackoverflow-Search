@@ -7,7 +7,9 @@ const natural = require('natural');
 const stopword = require('stopword');
 const request = require("request");
 const zlib = require('zlib');
-var showdown  = require('showdown');
+// var showdown  = require('showdown');
+
+var panel;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 
@@ -17,7 +19,7 @@ var showdown  = require('showdown');
 function activate(context) {
 	
 	vscode.commands.registerCommand('stackoverflowextension.start', function() {
-		const panel = vscode.window.createWebviewPanel('mainpage', 'Search Engine', vscode.ViewColumn.One, {enableScripts: true});
+		panel = vscode.window.createWebviewPanel('mainpage', 'Search Engine', vscode.ViewColumn.One, {enableScripts: true});
 		const pathhtml = vscode.Uri.file(path.join(context.extensionPath, 'app.html'));
 		const currentPath = vscode.Uri.file(path.join(context.extensionPath)).path;
 		panel.webview.html = fs.readFileSync(pathhtml.fsPath, 'utf-8');
@@ -27,32 +29,31 @@ function activate(context) {
 			switch(message.command)
 			{
 				case 'alert':
-					MainFunction(message.text, currentPath);
+					MainFunction(message.text);
 					// TestServerFunction();
 					vscode.window.showErrorMessage(message.text);
 					return;
 				}
 			});
-		panel.webview.postMessage({ command: 'refactor' });
+		// panel.webview.postMessage({ command: 'refactor' });
 
 	});
 
 }
 
 
-function TestServerFunction() {
-			// console.log("Body markdown:" + response.items[0].body_markdown)
-		var converter = new showdown.Converter();
-    	var html = converter.makeHtml("My problem is really weird. I have to sort an list like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E010&quot;, &quot;S02E013&quot;, &quot;S02E02&quot;, &quot;S02E03&quot;]\r\n\r\nand I want result like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E02&quot;, &quot;S02E03&quot;, &quot;S02E010&quot;, &quot;S02E013&quot;]\r\n\r\nI used `sort()`, `sorted()`, `map()` methods but these methods couldn&#39;t sort this list as it is already sorted. \r\nIf you type &quot;010&quot;&gt;&quot;02&quot; in python console it will return **false**.\r\n\r\n\r\n**_Please suggest me any way to debug this problem._**\r\n\r\n\r\n[See the console screenshots][2]\r\n\r\n\r\n  [1]: https://i.stack.imgur.com/oDERn.png\r\n  [2]: https://i.stack.imgur.com/Jb7BF.png\r\n");
-		console.log("HTML" + html);
+// function TestServerFunction() {
+// 			// console.log("Body markdown:" + response.items[0].body_markdown)
+// 		var converter = new showdown.Converter();
+//     	var html = converter.makeHtml("My problem is really weird. I have to sort an list like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E010&quot;, &quot;S02E013&quot;, &quot;S02E02&quot;, &quot;S02E03&quot;]\r\n\r\nand I want result like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E02&quot;, &quot;S02E03&quot;, &quot;S02E010&quot;, &quot;S02E013&quot;]\r\n\r\nI used `sort()`, `sorted()`, `map()` methods but these methods couldn&#39;t sort this list as it is already sorted. \r\nIf you type &quot;010&quot;&gt;&quot;02&quot; in python console it will return **false**.\r\n\r\n\r\n**_Please suggest me any way to debug this problem._**\r\n\r\n\r\n[See the console screenshots][2]\r\n\r\n\r\n  [1]: https://i.stack.imgur.com/oDERn.png\r\n  [2]: https://i.stack.imgur.com/Jb7BF.png\r\n");
+// 		console.log("HTML" + html);
 		
-}
+// }
 // Could not use spacy
 /**
  * @param {string} message
- * @param {string} currentPath
  */
-function MainFunction(message, currentPath)
+function MainFunction(message)
 {	
 	
 	const tokeniser = new natural.WordTokenizer();
@@ -98,8 +99,9 @@ async function ProcessIds(data) {
 	}
 	questions_url += ids[ids.length - 1] + "?site=stackoverflow&filter=!9_bDDx5Ia";
 	answers_url += ids[ids.length - 1] + "/answers?site=stackoverflow&filter=!9_bDE(S2a";
-	// console.log(questions_url);
+
 	var JSONData = {}
+	var OrderedUrls = []
 	// First get question data [title, body]
 	var reqData = {
 		url: questions_url,
@@ -116,18 +118,19 @@ async function ProcessIds(data) {
 		var questions = response.items;
 		for (var i=0;i<questions.length;i++)
 		{
+			OrderedUrls.push(questions[i].question_id);
 			var question = {"title":questions[i].title,"body":questions[i].body}
 			JSONData[questions[i].question_id] = question;
 		}
 		// console.log(JSONData);
-		GetAnswers(answers_url, JSONData);
+		GetAnswers(answers_url, JSONData, OrderedUrls);
 	});
 	request(reqData)
 		.pipe(gunzip)
 
 }
 
-function GetAnswers(answers_url, JSONData) {
+function GetAnswers(answers_url, JSONData, OrderedUrls) {
 	var reqData = {
 		url: answers_url,
 		method:"get",
@@ -154,6 +157,8 @@ function GetAnswers(answers_url, JSONData) {
 			}
 		}
 		console.log(JSONData);
+		console.log(OrderedUrls);
+		panel.webview.postMessage({JSONData:JSONData, OrderedUrls:OrderedUrls});
 	});
 	request(reqData)
 		.pipe(gunzip)

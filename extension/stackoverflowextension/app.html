@@ -9,15 +9,34 @@
 		<p id="title">Search Engine</p>
 	    <form> 
                 <input type="text" id="query">
-                <!-- <input type="text" id="text">  -->
-                <button onclick="moduleAdd()">Click me</button>        
+                <button onclick="moduleAdd()">Search</button>        
         </form>
+        <p id="data"></p>
      </body>
     <script>
+        const counter = document.getElementById('lines-of-code-counter');
+
         const vscode = acquireVsCodeApi();
         function moduleAdd(){
             var x = document.getElementById("query").value;
             vscode.postMessage({command: "alert", text: x});
-        }        
+        }  
+        
+        window.addEventListener('message', event =>{
+            const message = event.data;
+            var data = (message.JSONData);
+            var order = message.OrderedUrls;
+            // TODO: add this data to html using below example
+            for (var i=0;i<order.length;i++)
+            {
+                document.getElementById("data").innerHTML += '<h3>' + data[order[i]].title + '</h3><br>'+ data[order[i]].body + '<br><h3>Answers:</h3>';
+                for (var j=0;j<data[order[i]].answers.length;j++)
+                {
+                    document.getElementById("data").innerHTML += '<h4>' + (j+1).toString() + '</h4>' + data[order[i]].answers[j].body + '<br>'; 
+                }
+            }
+            
+        });
+        
        </script>
 </html> 
