@@ -29,10 +29,10 @@
             // TODO: add this data to html using below example
             for (var i=0;i<order.length;i++)
             {
-                document.getElementById("data").innerHTML += '<h3>' + data[order[i]].title + '</h3><br>'+ data[order[i]].body + '<br><h3>Answers:</h3>';
+                document.getElementById("data").innerHTML += '<hr><h2> Question'+ (i+1).toString()+ ' ' + data[order[i]].title + '</h2><hr><br>'+ data[order[i]].body + '<br><hr><h2>Answers:</h2>';
                 for (var j=0;j<data[order[i]].answers.length;j++)
                 {
-                    document.getElementById("data").innerHTML += '<h4>' + (j+1).toString() + '</h4>' + data[order[i]].answers[j].body + '<br>'; 
+                    document.getElementById("data").innerHTML += '<h4>' + (j+1).toString() + '</h4><h4>' + data[order[i]].answers[j].body + '</h4><hr><br>'; 
                 }
             }
             

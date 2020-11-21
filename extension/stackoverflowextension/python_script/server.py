@@ -114,7 +114,7 @@ def search(query):
     predicted_tags = np.array(predicted_tags)[np.newaxis]
     cosine_similarities_tags = pd.Series(cosine_similarity(predicted_tags, Store.tags_encoded)[0])
     cosine_similarities += cosine_similarities_tags
-    cosine_similarities = cosine_similarities*(1 + 0.4*Store.data.overall_scores )
+    cosine_similarities = cosine_similarities*(1 + 0.6*Store.data.overall_scores )
     result = ""
     for i, j in cosine_similarities.nlargest(int(results_returned)).iteritems():
         result += Store.data.question_url[i] + ','
