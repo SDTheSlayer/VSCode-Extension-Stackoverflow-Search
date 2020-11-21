@@ -142,13 +142,6 @@ def predict_tags_get_one_hot_vector(text):
     x_test = pad_sequences(Store.tokenizer.texts_to_sequences([text]), maxlen=Store.MAX_SEQUENCE_LENGTH)
     # Predict
     prediction = Store.model.predict([x_test])[0]
-    # temp_prediction = prediction
-    # indices = temp_prediction.argsort()[-5:]
-    # for i, value in enumerate(prediction):
-    #     if i in indices:
-    #         prediction[i]=1
-    #     else:
-    #         prediction[i]=0
     return prediction
 
 

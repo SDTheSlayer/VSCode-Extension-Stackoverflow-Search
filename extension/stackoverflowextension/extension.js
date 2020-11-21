@@ -7,7 +7,6 @@ const natural = require('natural');
 const stopword = require('stopword');
 const request = require("request");
 const zlib = require('zlib');
-// var showdown  = require('showdown');
 
 var panel;
 // this method is called when your extension is activated
@@ -30,26 +29,16 @@ function activate(context) {
 			{
 				case 'alert':
 					MainFunction(message.text);
-					// TestServerFunction();
-					vscode.window.showErrorMessage(message.text);
 					return;
 				}
 			});
-		// panel.webview.postMessage({ command: 'refactor' });
 
 	});
 
 }
 
 
-// function TestServerFunction() {
-// 			// console.log("Body markdown:" + response.items[0].body_markdown)
-// 		var converter = new showdown.Converter();
-//     	var html = converter.makeHtml("My problem is really weird. I have to sort an list like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E010&quot;, &quot;S02E013&quot;, &quot;S02E02&quot;, &quot;S02E03&quot;]\r\n\r\nand I want result like:\r\n\r\n    list1=[&quot;S01E01&quot;,&quot;S02E02&quot;, &quot;S02E03&quot;, &quot;S02E010&quot;, &quot;S02E013&quot;]\r\n\r\nI used `sort()`, `sorted()`, `map()` methods but these methods couldn&#39;t sort this list as it is already sorted. \r\nIf you type &quot;010&quot;&gt;&quot;02&quot; in python console it will return **false**.\r\n\r\n\r\n**_Please suggest me any way to debug this problem._**\r\n\r\n\r\n[See the console screenshots][2]\r\n\r\n\r\n  [1]: https://i.stack.imgur.com/oDERn.png\r\n  [2]: https://i.stack.imgur.com/Jb7BF.png\r\n");
-// 		console.log("HTML" + html);
-		
-// }
-// Could not use spacy
+
 /**
  * @param {string} message
  */
@@ -174,33 +163,3 @@ module.exports = {
 }
 
 
-
-// TODO: Add condition for python3 or python
-// CMD: python_script/bin/python3 script.py afterremovingstopwords currentpath
-// cp.exec(currentPath + '/python_script/bin/python3 ' + currentPath + '/python_script/script.py ' + afterremovingstopwords + " " + currentPath, (err, stdout, _) => {
-
-// 	if (err) {
-// 		console.log('error: ' + err);
-// 	}
-// 	else
-// 	{
-// 		console.log('data:', stdout);
-// 		data = stdout.split(',');
-// 		ProcessIds(data);
-// 	}
-
-// });
-
-/*
-
-Question i -> title -> all answers
-
-JSONData[question_id] = {title:"title", "body": body, answers:[answer1_body, answer2_body]}
-
-*/
-
-// console.log("Body markdown:" + response.items[0].body_markdown)
-// var converter = new showdown.Converter();
-// var html = converter.makeHtml(response.items[0].body_markdown);
-// console.log("HTML" + html);
-// GetAnswers(response);
